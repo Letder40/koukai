@@ -2,7 +2,7 @@
   "kind": "collectionType",
   "collectionName": "interesting_urls",
   "info": {
-    "name": "interesting_urls",
+    "name": "message",
     "description": ""
   },
   "options": {
@@ -12,20 +12,34 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "urls": {
-      "type": "string"
+    "text": {
+      "type": "richtext"
     },
-    "media": {
-      "collection": "file",
+    "sent_by": {
+      "plugin": "admin",
+      "model": "user"
+    },
+    "sent_to": {
+      "plugin": "admin",
+      "model": "user"
+    },
+    "sent_date": {
+      "type": "datetime"
+    },
+    "attachment": {
+      "model": "file",
       "via": "related",
       "allowedTypes": [
-        "images",
         "files",
+        "images",
         "videos"
       ],
       "plugin": "upload",
       "required": false,
       "pluginOptions": {}
+    },
+    "message_id": {
+      "type": "uid"
     }
   }
 }

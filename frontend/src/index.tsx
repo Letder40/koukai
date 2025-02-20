@@ -2,7 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './css/style.css';
 import reportWebVitals from './reportWebVitals';
-import Navbar from "./components/navbar"
+
+import Navbar from "./components/navbar";
+import DynamicZone from "./components/dynamic-zone";
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -10,7 +12,10 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <Navbar/> 
+    <div className='flex'>
+      <Navbar/> 
+      <DynamicZone/>
+    </div>
   </React.StrictMode>
 );
 

@@ -29,7 +29,7 @@ function Server() {
 
 function Servers() {
   return (
-    <div className="flex flex-col items-center bg-dblack-Strong h-full w-20 overflow-scroll">
+    <div className="flex flex-col items-center bg-dblack-Stronger h-full w-20 overflow-scroll">
       <Server/>
     </div>
   )
@@ -37,7 +37,7 @@ function Servers() {
 
 export default function Navbar(): React.JSX.Element {
   return (
-    <div className="bg-dblack-Light h-screen w-screen md:w-80 shadow-lg shadow-dblack-Light grid grid-cols-[5rem_1fr]">
+    <div className="bg-dblack-Strong h-screen w-screen md:w-96 shadow-lg shadow-dblack-Light grid grid-cols-[5rem_1fr]">
       <Servers/>
       <ActionButtons/>
     </div>
