@@ -26,10 +26,12 @@ func (hs HttpSocket) toString() string {
 
 func main() {
     httpSocket := httpSocketDefault()
-    routing.Routing()  
 
     fmt.Println("Sarting http server in ", httpSocket.toString())
-    err := http.ListenAndServe(httpSocket.toString(), http.FileServer(http.Dir("./webfiles")))
+    router := &http.ServeMux{}
+    routing.Routing(router)  
+
+    err := http.ListenAndServe(httpSocket.toString(), router)
     if err != nil {
         fmt.Printf("Server failed in listenning from %s, err: %s \n", httpSocket.toString(), err)
     }
