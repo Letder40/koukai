@@ -45,27 +45,42 @@ fi
 read -p '[!] All nodejs process will be killed ctrl-c to abort, any to continue '
 sudo pkill node
 
-if [[ ! -f "./strapi-backend/package-lock.json" ]]; then
+cd strapi-backend 
+if [[ ! -d "node_modules" ]]; then
     echo "[#] Installing strapi dependencies"
-    cd strapi-backend && npm install
+    npm ci &>/dev/null
 fi
 
-cd strapi-backend\
-&& echo "[#] Initializing strapi..."\
-&& npm run build &>/dev/null\
-&& npm run start &>/dev/null & disown\
-&& echo "[#] Strapi successfully started" 
+echo "[#] Initializing strapi..."
+npm run build &>/dev/null
+npm run start &>/dev/null & disown
 
-if [[ ! -f "./frontend/package-lock.json" ]]; then
+cd ../frontend
+if [[ ! -d "node_modules" ]]; then
     echo "[#] Installing frontend dependencies"
-    cd frontend && npm install
+    npm ci &>/dev/null
 fi
 
-cd frontend && BUILD_PATH=../backend/webfiles npm run build &>/dev/null\
-&& echo "[#] Frontend built" 
+echo "[#] Transpiling tailwind to css"
+npx tailwindcss -i ./src/css/index.css -o ./src/css/style.css &>/dev/null
 
-cd ../backend\
-&& go build\
-&& ./koukai
+echo "[#] Building frontend"
+BUILD_PATH=../backend/webfiles npm run build &>/dev/null
 
-npx tailwindcss -i ./frontend/src/css/index.css -o ./frontend/src/css/style.css || npm exec tailwindcss -i ./frontend/src/css/index.css -o ./frontend/src/css/style.css
+if [[ $? != 0 ]]; then
+    echo "[!] Frontend error" 
+    exit
+fi
+
+echo "[#] Building backend"
+cd ../backend
+go build
+
+if [[ $? != 0 ]]; then
+    echo "[!] Backend error" 
+    exit
+fi
+
+echo -e "[#] Starting HTTP server\n"
+
+./koukai
