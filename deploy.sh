@@ -40,6 +40,8 @@ TRANSFER_TOKEN_SALT=$transfer_token_salt
 JWT_SECRET=$jwt_secret
 EOF
 
+echo $appk1 > backend/.appkey
+
 fi
 
 read -p '[!] All nodejs process will be killed ctrl-c to abort, any to continue '
