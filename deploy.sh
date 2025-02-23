@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dependencies=(npm go)
+dependencies=(npm go sqlite3)
 
 dependency_check=true
 for dep in ${dependencies[@]}; do
@@ -40,8 +40,6 @@ TRANSFER_TOKEN_SALT=$transfer_token_salt
 JWT_SECRET=$jwt_secret
 EOF
 
-echo $appk1 > backend/.appkey
-
 fi
 
 read -p '[!] All nodejs process will be killed ctrl-c to abort, any to continue '
@@ -76,6 +74,21 @@ fi
 
 echo "[#] Building backend"
 cd ../backend
+api_token=$(sqlite3 ../strapi-backend/.tmp/data.db "select access_key from strapi_api_tokens where name = 'Full Access'")
+
+if [[ $api_token == "" ]]; then
+    echo "[!] Error retrieving the strapi api token"
+    exit
+fi
+
+echo "[#] Generating valid strapi api_token"
+if [[ -z $api_token_salt ]]; then
+    api_token_salt=$(cat ../strapi-backend/.env | head -n 4 | tail -n 1 | sed 's/^API_TOKEN_SALT=//g')
+fi
+
+hashed_api_token=$(../utils/bin/api_token_generator "$api_token_salt" ".api_token")
+sqlite3 ../strapi-backend/.tmp/data.db "update strapi_api_tokens set access_key = '$hashed_api_token' where name = 'Full Access'"
+
 go build
 
 if [[ $? != 0 ]]; then
