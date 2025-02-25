@@ -16,7 +16,7 @@ if [[ ! $dependency_check ]]; then
     exit
 fi
 
-if [[ ! -f "./strapi-backend/.env" ]]; then 
+if [[ ! -f "./strapi/.env" ]]; then 
     read -p "Strapi panel addr - default [127.0.0.1]: " addr
     if [[ -z "$addr" ]]; then addr="127.0.0.1"; fi
     
@@ -30,7 +30,7 @@ if [[ ! -f "./strapi-backend/.env" ]]; then
     transfer_token_salt=$(openssl rand -base64 32)
     jwt_secret=$(openssl rand -base64 32)
 
-    cat <<EOF > ./strapi-backend/.env
+    cat <<EOF > ./strapi/.env
 HOST=$addr
 PORT=$port
 APP_KEYS="$appk1,$appk2"
@@ -45,7 +45,7 @@ fi
 read -p '[!] All nodejs process will be killed ctrl-c to abort, any to continue '
 sudo pkill node
 
-cd strapi-backend 
+cd strapi 
 if [[ ! -d "node_modules" ]]; then
     echo "[#] Installing strapi dependencies"
     npm ci &>/dev/null
@@ -55,7 +55,7 @@ echo "[#] Initializing strapi..."
 npm run build &>/dev/null
 npm run start &>/dev/null & disown
 
-cd ../frontend
+cd ../core/frontend
 if [[ ! -d "node_modules" ]]; then
     echo "[#] Installing frontend dependencies"
     npm ci &>/dev/null
@@ -65,7 +65,7 @@ echo "[#] Transpiling tailwind to css"
 npx tailwindcss -i ./src/css/index.css -o ./src/css/style.css &>/dev/null
 
 echo "[#] Building frontend"
-BUILD_PATH=../backend/webfiles npm run build &>/dev/null
+npm run build &>/dev/null
 
 if [[ $? != 0 ]]; then
     echo "[!] Frontend error" 
@@ -73,8 +73,8 @@ if [[ $? != 0 ]]; then
 fi
 
 echo "[#] Building backend"
-cd ../backend
-api_token=$(sqlite3 ../strapi-backend/.tmp/data.db "select access_key from strapi_api_tokens where name = 'Full Access'")
+cd ..
+api_token=$(sqlite3 ../strapi/.tmp/data.db "select access_key from strapi_api_tokens where name = 'Full Access'")
 
 if [[ $api_token == "" ]]; then
     echo "[!] Error retrieving the strapi api token"
@@ -83,11 +83,11 @@ fi
 
 echo "[#] Generating valid strapi api_token"
 if [[ -z $api_token_salt ]]; then
-    api_token_salt=$(cat ../strapi-backend/.env | head -n 4 | tail -n 1 | sed 's/^API_TOKEN_SALT=//g')
+    api_token_salt=$(cat ../strapi/.env | head -n 4 | tail -n 1 | sed 's/^API_TOKEN_SALT=//g')
 fi
 
 hashed_api_token=$(../utils/bin/api_token_generator "$api_token_salt" ".api_token")
-sqlite3 ../strapi-backend/.tmp/data.db "update strapi_api_tokens set access_key = '$hashed_api_token' where name = 'Full Access'"
+sqlite3 ../strapi/.tmp/data.db "update strapi_api_tokens set access_key = '$hashed_api_token' where name = 'Full Access'"
 
 go build
 

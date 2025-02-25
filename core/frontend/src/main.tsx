@@ -1,15 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import './css/style.css';
 
 import Navbar from "./components/navbar";
 import DynamicZone from "./components/dynamic-zone";
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-
-root.render(
+const Main = () => (
   <React.StrictMode>
     <div className='flex'>
       <Navbar/> 
@@ -17,3 +12,5 @@ root.render(
     </div>
   </React.StrictMode>
 );
+
+export default Main;
