@@ -7,6 +7,7 @@ module.exports = {
     extend: {},
     colors: {
       dblue: "#7289da",
+      dblueDeep: "#5866F2",
       dblack: {
         Light: "#424549",
         Medium: "#36393e",
