@@ -31,7 +31,7 @@ const Login = () => {
             if (!response.ok) {
                 throw new Error('Login error');
             }
-
+            
             const data = await response.json()
             console.log('Response:', data);
         } catch (error) {
@@ -42,7 +42,7 @@ const Login = () => {
     return(
       <React.StrictMode>
         <div className='w-screen h-screen flex items-center justify-center bg-dblue'>
-          <form className='w-5/6 max-w-screen-sm h-[500px] grid grid-rows-[180px_1fr_1fr_1fr] text-white bg-dblack-Medium' onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className='w-5/6 max-w-screen-sm h-[500px] grid grid-rows-[180px_1fr_1fr_1fr] text-white bg-dblack-Medium'>
             <div className='self-center justify-self-center flex items-center flex-col'>
                 <h1 className='self-center justify-self-center text-3xl'>Welcome to koukai</h1>
                 <p>Login to start chatting, you won't regret it</p>
@@ -58,7 +58,7 @@ const Login = () => {
             <div className='self-center justify-self-center w-11/12'>
                 <input type='submit' value='Login' className='self-start justify-self-center w-full h-10 mb-1 bg-dblueDeep'/>
                 <span className='text-[#a5a5a5]'>Need an account?</span>&nbsp;
-                <Link to='/singup' className='self-center justify-self-start text-[#00bbff]'>Register</Link>
+                <Link to='/singup' className='self-center justify-self-start text-[#00bbff]'>SingUp</Link>
             </div>
           </form>
         </div>

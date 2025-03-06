@@ -26,8 +26,9 @@ func ServerStrapiRequest(method string, endpoint string, body io.Reader) (string
         return "", err
     }
 
-    if resp.StatusCode != 200 {
-        return "", errors.New("Strapi endpoint sent " + resp.Status)
+    if resp.StatusCode > 299 {
+        respBody, _ := io.ReadAll(resp.Body)
+        return string(respBody), errors.New("Strapi endpoint sent " + resp.Status)
     }     
 
     respBody, _ := io.ReadAll(resp.Body)
@@ -45,6 +46,7 @@ func UserStrapiRequest(endpoint string, jwt string) (string, error) {
 
     auth := fmt.Sprintf("Bearer %s", jwt)
     req.Header.Add("Authorization", auth)
+    req.Header.Add("Content-Type", "application/json")
 
     resp, err := client.Do(req)
     if err != nil {

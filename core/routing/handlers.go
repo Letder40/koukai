@@ -51,8 +51,8 @@ func HandleSingup(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if _, err := requests.ServerStrapiRequest("POST", "/api/users", bytes.NewReader(body)); err != nil {
-        http.Error(w, "Strapi error", http.StatusBadRequest)
+    if resp, err := requests.ServerStrapiRequest("POST", "/api/users", bytes.NewReader(body)); err != nil {
+        http.Error(w, fmt.Sprintf("Strapi error: %s", resp), http.StatusBadRequest)
         return
     }
 }
