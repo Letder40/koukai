@@ -1,38 +1,38 @@
 package main
 
 import (
-    "fmt"
-    "net/http"
-    
-    "koukai/routing"
+	"fmt"
+	"net/http"
+
+	"koukai/routing"
 )
 
 type HttpSocket struct {
-    addr string
-    port string
+	addr string
+	port string
 }
 
 func httpSocketDefault() HttpSocket {
-    httpSocket := HttpSocket {
-        addr: "0.0.0.0",
-        port: "8000",
-    }
-    return httpSocket
+	httpSocket := HttpSocket{
+		addr: "0.0.0.0",
+		port: "8000",
+	}
+	return httpSocket
 }
 
 func (hs HttpSocket) toString() string {
-    return hs.addr + ":" + hs.port 
+	return hs.addr + ":" + hs.port
 }
 
 func main() {
-    httpSocket := httpSocketDefault()
+	httpSocket := httpSocketDefault()
 
-    fmt.Println("Sarting http server in ", httpSocket.toString())
-    router := &http.ServeMux{}
-    routing.Routing(router)  
+	fmt.Println("Sarting http server in ", httpSocket.toString())
+	router := &http.ServeMux{}
+	routing.Routing(router)
 
-    err := http.ListenAndServe(httpSocket.toString(), router)
-    if err != nil {
-        fmt.Printf("Server failed in listenning from %s, err: %s \n", httpSocket.toString(), err)
-    }
+	err := http.ListenAndServe(httpSocket.toString(), router)
+	if err != nil {
+		fmt.Printf("Server failed in listenning from %s, err: %s \n", httpSocket.toString(), err)
+	}
 }
