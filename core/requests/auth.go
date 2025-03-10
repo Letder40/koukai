@@ -2,15 +2,17 @@ package requests
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
 )
 
 func validateJWT(jwt string) error {
-	str, err := UserStrapiRequest("users/me", jwt)
+	_, err := UserStrapiRequest("/api/users/me", jwt)
 
-	if err != nil || str != "" {
+	if err != nil {
+        println(err.Error())
 		return errors.New("validation failled")
 	}
 
@@ -20,7 +22,11 @@ func validateJWT(jwt string) error {
 // Check for jwt in cookies and headers
 func GetUserJWT(r *http.Request) (string, error) {
 	if cookie, err := r.Cookie("jwt"); err == nil {
-		return cookie.Value, nil
+		if err := validateJWT(cookie.Value); err == nil {
+			return cookie.Value, nil
+		} else {
+			fmt.Println("Cookie JWT validation failed:", err)
+		}
 	}
 
 	authHeader := r.Header.Get("Authorization")

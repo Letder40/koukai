@@ -47,6 +47,7 @@ const Login = () => {
 
             const authData: UserAuthData = await response.json()
             const jwt: string = authData.jwt
+            const username: string = authData.user.username
 
             fetch("/api/user", {
                 method: 'GET',
@@ -58,6 +59,7 @@ const Login = () => {
             });
 
             localStorage.setItem("jwt", jwt)
+            localStorage.setItem("username", username)
             document.cookie += `jwt=${jwt}`
 
             window.location.replace("/index.html")

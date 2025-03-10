@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"koukai/requests"
+	"koukai/utils"
 	"net/http"
 	"sync"
 )
@@ -15,70 +16,73 @@ type userLoginData struct {
 	Password   string `json:"password"`
 }
 
-type userSingupData struct {
+type userSignupData struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
 }
 
-type userData struct {
-	Id         uint64 `json:"id"`
+type UserData struct {
+	ID         int    `json:"id"`
 	DocumentId string `json:"documentId"`
 	Username   string `json:"username"`
 	Email      string `json:"email"`
 }
 
 type AppRuntime struct {
-	userData map[string]userData
+	UserData map[string]UserData
 	mutex    sync.RWMutex
 }
 
-func sendJsonFrom[T any](w http.ResponseWriter, data T) error {
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-	fmt.Fprint(w, jsonData)
-	return nil
+func (appRuntime *AppRuntime) initRuntime() {
+	appRuntime.UserData = make(map[string]UserData)
+	appRuntime.mutex = sync.RWMutex{}
 }
 
-func (app *AppRuntime) cacheUser(jwt string, userData userData) {
+func (app *AppRuntime) cacheUser(jwt string, UserData UserData) {
 	app.mutex.Lock()
-	defer app.mutex.Unlock()
-	app.userData[jwt] = userData
+	app.UserData[jwt] = UserData
+	app.mutex.Unlock()
 }
 
 func (app *AppRuntime) userHandler(w http.ResponseWriter, r *http.Request) {
-	app.mutex.RLock()
-	defer app.mutex.RUnlock()
 	jwt, err := requests.GetUserJWT(r)
 	if err != nil {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		http.Error(w, "Forbidden: Invalid or missing JWT", http.StatusForbidden)
 		return
 	}
 
-	userData, exists := app.userData[jwt]
+	app.mutex.RLock()
+	userData, exists := app.UserData[jwt]
+	app.mutex.RUnlock()
+
 	if !exists {
 		resp, err := requests.UserStrapiRequest("/api/users/me", jwt)
 		if err != nil {
-			http.Error(w, "Server error", http.StatusInternalServerError)
+			println("Strapi request error:", err.Error())
+			http.Error(w, fmt.Sprintf("Failed to fetch user data: %v", err), http.StatusInternalServerError)
 			return
 		}
-		err = json.Unmarshal([]byte(resp), &userData)
-		if err != nil {
-			http.Error(w, "Server error", http.StatusInternalServerError)
+
+		if err := json.Unmarshal([]byte(resp), &userData); err != nil {
+			println("Unmarshal error:", err.Error())
+			println("Response body:", string(resp))
+			http.Error(w, "Unable to parse user data", http.StatusInternalServerError)
 			return
 		}
+
 		app.cacheUser(jwt, userData)
 	}
 
-	err = sendJsonFrom(w, userData)
-	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
+	if err := utils.SendJsonFrom(w, userData); err != nil {
+		println("SendJson error:", err.Error())
+		http.Error(w, "Failed to send response", http.StatusInternalServerError)
 		return
+	}
+
+	if flusher, ok := w.(http.Flusher); ok {
+		flusher.Flush()
 	}
 }
 
@@ -91,8 +95,8 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var userData userLoginData
-	err = json.Unmarshal(body, &userData)
+	var UserData userLoginData
+	err = json.Unmarshal(body, &UserData)
 	if err != nil {
 		http.Error(w, "Invalid Json format", http.StatusBadRequest)
 		return
@@ -108,7 +112,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, response)
 }
 
-func handleSingup(w http.ResponseWriter, r *http.Request) {
+func handleSignup(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	body, err := io.ReadAll(r.Body)
@@ -117,8 +121,8 @@ func handleSingup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var userSingupData userSingupData
-	err = json.Unmarshal(body, &userSingupData)
+	var userSignupData userSignupData
+	err = json.Unmarshal(body, &userSignupData)
 	if err != nil {
 		http.Error(w, "Invalid Json format", http.StatusBadRequest)
 		return
