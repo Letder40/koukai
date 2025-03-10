@@ -59,7 +59,6 @@ func UserStrapiRequest(endpoint string, jwt string) (string, error) {
 
 	if strings.Split(resp.Status, " ")[0] == "200" {
 		respBody, _ := io.ReadAll(resp.Body)
-		println("200 OK: api_token validated")
 		return string(respBody), nil
 	}
 

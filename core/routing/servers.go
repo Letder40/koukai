@@ -127,10 +127,11 @@ func (server *Server) saveMessage(message *Message, userData UserData) {
 }
 
 // Broadcast message to all clients
-func (server *Server) BroadcastMessage(message Message) {
+func (server *Server) BroadcastMessage(message Message, userData UserData) {
 	server.mu.Lock()
 	defer server.mu.Unlock()
 
+    message.UserData = userData
 	jsonData, err := json.Marshal(message)
 	if err != nil {
 		fmt.Println("Error marshaling message:", err)
@@ -198,7 +199,7 @@ func (server *Server) HandlePostMessage(w http.ResponseWriter, r *http.Request) 
 
 	server.saveMessage(&message, userData)
 
-	server.BroadcastMessage(message)
+	server.BroadcastMessage(message, userData)
 
 	w.Header().Set("Content-Type", "application/json")
 	utils.SendJsonFrom(w, message)
